@@ -1,11 +1,12 @@
 package main;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.TreeMap;
 
 class Main {
     
@@ -34,29 +35,35 @@ class Main {
             this.tabuleiro = tab;
             this.altura = 0;
             this.posicaoZero = this.procuraZero();
-            this.custoHeuristica = this.calculaHeuristica3();
+            this.custoHeuristica = this.calculaHeuristica4();
             
             //System.out.println(this.custoHeuristica);
             this.custoTotal = custoHeuristica + altura;
             //this.mostraFormato();
-            this.hash = this.toHash();
+            this.hash = this.custoTotal + this.toHash();
             this.pai = "Primeiro";
+            if (this.custoTotal >= 10){
+                this.hash = "h"+this.hash;
+            }
         }
         
         public Puzzle(int[][] tab, int altura, String pai){
             this.tabuleiro = tab;
             this.altura = altura;
             this.posicaoZero = this.procuraZero();
-            this.custoHeuristica = this.calculaHeuristica3();
+            this.custoHeuristica = this.calculaHeuristica4();
             
             //System.out.println(this.custoHeuristica);
             this.custoTotal = custoHeuristica + altura;
             //this.mostraFormato();
-            this.hash = this.toHash();
+            this.hash = this.custoTotal + this.toHash();
             this.pai = pai;
+            if (this.custoTotal >= 10){
+                this.hash = "h"+this.hash;
+            }
         }
         
-        private int calculaHeuristica(){
+        private int calculaHeuristica1(){
             int[][] estadoFinal = new int[][] {{1, 2, 3, 4},{12, 13, 14, 5},{11, 0, 15, 6}, {10, 9, 8, 7}};
             int soma = 0;
             for(int i = 0; i < 4; i++){
@@ -168,6 +175,32 @@ class Main {
             return retorno;
         }
         
+        private int calculaHeuristica4(){
+            int h1 = this.calculaHeuristica1();
+            int h2 = this.calculaHeuristica2();
+            int h3 = this.calculaHeuristica3();
+            
+            double aux = (0.1*h1 + 0.1*h2 + 0.8*h3);
+            int retorno;
+            aux = Math.ceil(aux);
+            retorno = (int) aux;
+            
+            return retorno;
+            
+        }
+        
+        private int calculaHeuristica5(){
+            int h1 = this.calculaHeuristica1();
+            int h2 = this.calculaHeuristica2();
+            int h3 = this.calculaHeuristica3();
+            
+            int aux = Math.max(h1, h2);
+            int retorno = Math.max(aux, h3);
+            
+            return retorno;
+            
+        }
+        
         private int[] procuraZero(){
             int[] retorno = new int[2];
             for(int i = 0; i < 4; i++){
@@ -211,7 +244,9 @@ class Main {
             String retorno = "";
             for(int i = 0; i < 4; i++){
                 for(int j = 0; j < 4; j++){
+                    retorno = retorno + "-";
                     retorno = retorno + this.tabuleiro[i][j];
+                    
                 }
             }
             return retorno;
@@ -288,16 +323,26 @@ class Main {
     
     public static int algoritmoAEstrela(Puzzle estadoInicial){
         int[][] estadoFinal = new int[][] {{1, 2, 3, 4},{12, 13, 14, 5},{11, 0, 15, 6}, {10, 9, 8, 7}};
-        ArrayList<Puzzle> listaAberto = new ArrayList<>();
-        ArrayList<Puzzle> listaFechado = new ArrayList<>();
+        //ArrayList<Puzzle> listaAberto = new ArrayList<>();
+        //ArrayList<Puzzle> listaFechado = new ArrayList<>();
         
-        listaAberto.add(estadoInicial);
+        TreeMap<String, Puzzle> listaAberto = new TreeMap<>();
+        HashMap<String, Puzzle> listaFechado = new HashMap<>();
+        
+        //listaAberto.add(estadoInicial);
+        listaAberto.put(estadoInicial.hash, estadoInicial);
         int it = 0;
         while(!listaAberto.isEmpty()){
            //System.out.println(++it);
-           Puzzle v = buscaMenor(listaAberto); 
-           listaAberto.remove(v);
-           listaFechado.add(v);
+           //Puzzle v = buscaMenor(listaAberto); 
+           //listaAberto.remove(v);
+            String str = listaAberto.firstKey();
+            //System.out.println(str);
+            Puzzle v = listaAberto.get(str);
+            listaAberto.remove(str);
+
+            //listaFechado.add(v);
+           listaFechado.put(v.hash, v);
            ArrayList<Puzzle> vSucessor = new ArrayList<>();
            //v.mostraFormato();
            if(v.verifica()){
@@ -310,11 +355,14 @@ class Main {
                }
                
                for(Puzzle m : vSucessor){
-                   if((!listaAberto.contains(m) && !listaFechado.contains(m)) || ((listaAberto.contains(m) || listaFechado.contains(m)) && m.altura <= v.altura)){
-                        listaAberto.add(m);
-                        if(listaFechado.contains(m)){
+                   //if((!listaAberto.contains(m) && !listaFechado.contains(m)) || ((listaAberto.contains(m) || listaFechado.contains(m)) && m.altura <= v.altura)){
+                   if((!listaAberto.containsKey(m.hash) && !listaFechado.containsKey(m.hash)) || ((listaAberto.containsKey(m.hash) || listaFechado.containsKey(m.hash)) && m.altura <= v.altura)){
+                        listaAberto.put(m.hash, m);
+                        //listaAberto.add(m);
+                        //if(listaFechado.contains(m)){
+                          if(listaFechado.containsKey(m.hash)){
                             //listaAberto.add(m);
-                            listaFechado.remove(m);
+                            listaFechado.remove(m.hash);
                         }
                    }
                }
