@@ -1,6 +1,7 @@
 package main;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -35,11 +36,9 @@ class Main {
             this.tabuleiro = tab;
             this.altura = 0;
             this.posicaoZero = this.procuraZero();
-            this.custoHeuristica = this.calculaHeuristica4();
+            this.custoHeuristica = this.calculaHeuristica1();
             
-            //System.out.println(this.custoHeuristica);
             this.custoTotal = custoHeuristica + altura;
-            //this.mostraFormato();
             this.hash = this.custoTotal + this.toHash();
             this.pai = "Primeiro";
             if (this.custoTotal >= 10){
@@ -51,11 +50,10 @@ class Main {
             this.tabuleiro = tab;
             this.altura = altura;
             this.posicaoZero = this.procuraZero();
-            this.custoHeuristica = this.calculaHeuristica4();
+            this.custoHeuristica = this.calculaHeuristica1();
             
-            //System.out.println(this.custoHeuristica);
             this.custoTotal = custoHeuristica + altura;
-            //this.mostraFormato();
+            
             this.hash = this.custoTotal + this.toHash();
             this.pai = pai;
             if (this.custoTotal >= 10){
@@ -96,11 +94,8 @@ class Main {
             vetor[14] = this.tabuleiro[2][2];
             vetor[15] = this.tabuleiro[2][1];
 
-            //System.out.print(vetor[0] + " ");
             for(int l = 1; l < 16; l++){
-                //System.out.print(vetor[l] + " ");
                 if(vetor[l] != vetor[l-1] + 1){
-                    //System.out.print(vetor[l] + " ");
                     retorno++;
                 }
             }
@@ -166,7 +161,6 @@ class Main {
                     int linha = matriz[numero][0];
                     int coluna = matriz[numero][1];
                     int dist = Math.abs(linha - i) + Math.abs(coluna - j);
-                    //System.out.println(retorno);
                     retorno += dist;
                     
                 }
@@ -215,17 +209,16 @@ class Main {
         }
         
         public void mostraFormato(){
-        //System.out.println("HASH = " + this.hash);
-        //System.out.println("PAI = " + this.pai);
-        System.out.println("Custo = " + this.altura + " -- Heuristica = " + this.custoHeuristica);
-        System.out.println("CUSTO TOTAL = " + this.custoTotal);
-        for(int i = 0; i < 4; i++){            
-            for(int j = 0; j < 4; j++){
-                System.out.print(this.tabuleiro[i][j] + " ");
+            System.out.println(this.hash);
+            System.out.println("Custo = " + this.altura + " -- Heuristica = " + this.custoHeuristica);
+            System.out.println("CUSTO TOTAL = " + this.custoTotal);
+            for(int i = 0; i < 4; i++){            
+                for(int j = 0; j < 4; j++){
+                    System.out.print(this.tabuleiro[i][j] + " ");
+                }
+                System.out.println();
             }
             System.out.println();
-        }
-        System.out.println();
     }
         
         public boolean verifica(){
@@ -255,14 +248,12 @@ class Main {
         public ArrayList<Puzzle> geraSucessor(){
         ArrayList<Puzzle> listaSucessor = new ArrayList<>();
         int auxTroca;
-        //Troca a col pela col+1
         int linha = this.posicaoZero[0];
         int coluna = this.posicaoZero[1];
         int[][] formato1 = new int[4][4];
         for(int i = 0; i < 4; i++){
             System.arraycopy(this.tabuleiro[i], 0, formato1[i], 0, 4);
         }
-        //System.out.println(this.formato[linha][coluna]);
         if(coluna < 3){
             int[][] formatoNovo = new int[4][4];
             for(int i = 0; i < 4; i++){
@@ -272,11 +263,9 @@ class Main {
             formatoNovo[linha][coluna] = formatoNovo[linha][coluna+1];
             formatoNovo[linha][coluna+1] = auxTroca;
             Puzzle novo1 = new Puzzle(formatoNovo, this.altura+1, this.hash);
-            //novo1.mostraFormato();
             listaSucessor.add(novo1);
             
         }
-        //System.out.println(this.formato[linha][coluna]);
         if(coluna > 0){
             int[][] formatoNovo = new int[4][4];
             for(int i = 0; i < 4; i++){
@@ -286,10 +275,8 @@ class Main {
             formatoNovo[linha][coluna] = formatoNovo[linha][coluna-1];
             formatoNovo[linha][coluna-1] = auxTroca;
             Puzzle novo2 = new Puzzle(formatoNovo, this.altura+1, this.hash);
-            //novo2.mostraFormato();
             listaSucessor.add(novo2);
         }
-        //System.out.println(this.formato[linha][coluna]);
         if(linha > 0){
             int[][] formatoNovo = new int[4][4];
             for(int i = 0; i < 4; i++){
@@ -299,10 +286,8 @@ class Main {
             formatoNovo[linha][coluna] = formatoNovo[linha-1][coluna];
             formatoNovo[linha-1][coluna] = auxTroca;
             Puzzle novo3 = new Puzzle(formatoNovo, this.altura+1, this.hash);
-            //novo3.mostraFormato();
             listaSucessor.add(novo3);
         }
-        //System.out.println(this.formato[linha][coluna]);
         if(linha < 3){
             int[][] formatoNovo = new int[4][4];
             for(int i = 0; i < 4; i++){
@@ -312,7 +297,6 @@ class Main {
             formatoNovo[linha][coluna] = formatoNovo[linha+1][coluna];
             formatoNovo[linha+1][coluna] = auxTroca;
             Puzzle novo4 = new Puzzle(formatoNovo, this.altura+1, this.hash);
-            //novo4.mostraFormato();
             listaSucessor.add(novo4);
         }
         return listaSucessor;
@@ -323,50 +307,38 @@ class Main {
     
     public static int algoritmoAEstrela(Puzzle estadoInicial){
         int[][] estadoFinal = new int[][] {{1, 2, 3, 4},{12, 13, 14, 5},{11, 0, 15, 6}, {10, 9, 8, 7}};
-        //ArrayList<Puzzle> listaAberto = new ArrayList<>();
-        //ArrayList<Puzzle> listaFechado = new ArrayList<>();
         
         TreeMap<String, Puzzle> listaAberto = new TreeMap<>();
         HashMap<String, Puzzle> listaFechado = new HashMap<>();
         
-        //listaAberto.add(estadoInicial);
         listaAberto.put(estadoInicial.hash, estadoInicial);
         int it = 0;
         while(!listaAberto.isEmpty()){
-           //System.out.println(++it);
-           //Puzzle v = buscaMenor(listaAberto); 
-           //listaAberto.remove(v);
+            it++;
             String str = listaAberto.firstKey();
-            //System.out.println(str);
             Puzzle v = listaAberto.get(str);
             listaAberto.remove(str);
 
-            //listaFechado.add(v);
-           listaFechado.put(v.hash, v);
-           ArrayList<Puzzle> vSucessor = new ArrayList<>();
-           //v.mostraFormato();
-           if(v.verifica()){
-               return v.custoTotal;
-           } else {
+            listaFechado.put(v.hash, v);
+            ArrayList<Puzzle> vSucessor = new ArrayList<>();
+            if(v.verifica()){
+                System.out.println("iterações: "+it);
+                return v.custoTotal;
+            } else {
                vSucessor = v.geraSucessor();
                if(vSucessor.isEmpty()){
-                   //return -1;
-                   continue;
+                    continue;
                }
                
                for(Puzzle m : vSucessor){
-                   //if((!listaAberto.contains(m) && !listaFechado.contains(m)) || ((listaAberto.contains(m) || listaFechado.contains(m)) && m.altura <= v.altura)){
                    if((!listaAberto.containsKey(m.hash) && !listaFechado.containsKey(m.hash)) || ((listaAberto.containsKey(m.hash) || listaFechado.containsKey(m.hash)) && m.altura <= v.altura)){
                         listaAberto.put(m.hash, m);
-                        //listaAberto.add(m);
-                        //if(listaFechado.contains(m)){
-                          if(listaFechado.containsKey(m.hash)){
-                            //listaAberto.add(m);
+                        if(listaFechado.containsKey(m.hash)){
                             listaFechado.remove(m.hash);
                         }
                    }
-               }
-           }
+                }
+            }
            
         }
         
@@ -375,12 +347,15 @@ class Main {
     
     public static void main(String[] args) throws FileNotFoundException, IOException {
         
+        //Tempo inicial
+        long tempoIn = System.currentTimeMillis();
+        
         //==============================================================//
         //===========================LEITURA============================//
-        //String nomeArquivo = "teste.txt";
-        //FileInputStream stream = new FileInputStream(nomeArquivo);
-        //InputStreamReader reader = new InputStreamReader(stream);
-        InputStreamReader reader = new InputStreamReader(System.in);
+        String nomeArquivo = "teste.txt";
+        FileInputStream stream = new FileInputStream(nomeArquivo);
+        InputStreamReader reader = new InputStreamReader(stream);
+        //InputStreamReader reader = new InputStreamReader(System.in);
         BufferedReader br = new BufferedReader(reader);
         
         int[][] entrada = new int[4][4];
@@ -393,7 +368,6 @@ class Main {
             for(int j = 0; j < 4; j++){
                 entrada[i][j] = Integer.parseInt(sublinha[k]);
                 k++;
-                //System.out.println(entrada[i][j]);
             }
         }
         
@@ -401,9 +375,11 @@ class Main {
         //=============================================================//
         Puzzle estadoInicial = new Puzzle(entrada);
         System.out.println(algoritmoAEstrela(estadoInicial));
-        //System.out.println(estadoInicial.custoHeuristica);        
+        
+        long tempoTotal = System.currentTimeMillis() - tempoIn;
         
         
+        System.out.println("Tempo gasto: " + tempoTotal);
         
     }
 
